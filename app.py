@@ -2,6 +2,7 @@ import os
 
 from dotenv import load_dotenv
 from google import genai
+from prompt import LINUX_LOG_ANALYZER_PROMPT
 
 
 load_dotenv()
@@ -12,13 +13,9 @@ client = genai.Client(
 
 
 def main():
-    log = "Permission denied: cannot access /var/log/syslog"
-    prompt = f"""
-    You are a Linux system administrator.
-    Analyze the following log
-    {log}
-    Identify the root cause of the error and provide a solution.
-    """
+    #log = "Permission denied: cannot access /var/log/syslog"
+    log = "Connection refused: database server 10.10.20.15:5432"
+    prompt = LINUX_LOG_ANALYZER_PROMPT.format(log=log)
     #print(prompt)
     print("Sending request...")
 
