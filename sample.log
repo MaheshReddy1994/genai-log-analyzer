@@ -1,0 +1,4 @@
+2026-09-21 10:15:01 INFO Starting application
+2026-09-21 10:15:02 INFO Loading configuration
+2026-09-21 10:15:03 ERROR Permission denied: /etc/myapp/config.yaml
+2026-09-21 10:15:03 ERROR Application startup failed

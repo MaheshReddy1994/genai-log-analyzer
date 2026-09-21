@@ -13,11 +13,27 @@ client = genai.Client(
     api_key=os.getenv("GEMINI_API_KEY")
 )
 
+def read_log_file(file_path):
+    try:
+        with open(file_path, 'r', encoding='utf-8') as file:
+            content = file.read()
+            
+        if not content.strip():
+            raise ValueError("Log file is empty.")
+        return content
+    
+    except (FileNotFoundError, PermissionError, OSError, ValueError) as e:
+        print(f"Error reading log file: {e}")
+        return None
+
 
 def main():
     #log = "Permission denied: cannot access /var/log/syslog"
     #log = "Connection refused: database server 10.10.20.15:5432"
-    log = "Permission denied: /etc/app/config.yaml"
+    log = read_log_file("sample.log")
+    if log is None:
+        print("Log analysis cancelled.")
+        exit()
     prompt = LINUX_LOG_ANALYZER_PROMPT.format(log=log)
     #print(prompt)
     print("Sending request...")
