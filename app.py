@@ -14,7 +14,8 @@ client = genai.Client(
 
 def main():
     #log = "Permission denied: cannot access /var/log/syslog"
-    log = "Connection refused: database server 10.10.20.15:5432"
+    #log = "Connection refused: database server 10.10.20.15:5432"
+    log = "Permission denied: /etc/app/config.yaml"
     prompt = LINUX_LOG_ANALYZER_PROMPT.format(log=log)
     #print(prompt)
     print("Sending request...")
@@ -22,7 +23,12 @@ def main():
     interaction = client.interactions.create(
         model="gemini-3.7-flash",
         #input="Say hello in one word."
-        input = prompt
+        input = prompt,
+        response_format={
+            "type": "text",
+            "mime_type": "application/json",
+            "schema": LogAnalysis.model_json_schema()
+        }
     )
     
     print("Response received!")
@@ -31,8 +37,7 @@ def main():
     
     response_text = interaction.output_text
     
-    response_data = json.loads(response_text)
-    llm_response = LogAnalysis(**response_data)
+    llm_response = LogAnalysis.model_validate_json(response_text)
     
     print("\nValidated Log Analysis:")
     print("Root Cause:", llm_response.root_cause)
