@@ -34,8 +34,11 @@ def main():
     response_data = json.loads(response_text)
     llm_response = LogAnalysis(**response_data)
     
-    print ("Validated LLM Response:")
-    print(llm_response)
+    print("\nValidated Log Analysis:")
+    print("Root Cause:", llm_response.root_cause)
+    print("Category:", llm_response.category.value)
+    print("Confidence:", llm_response.confidence_level.value)
+    print("Evidence:", llm_response.evidence)
 
 
 if __name__ == "__main__":
