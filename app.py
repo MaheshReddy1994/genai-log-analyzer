@@ -1,9 +1,9 @@
 import os
-
+import json
 from dotenv import load_dotenv
 from google import genai
 from prompt import LINUX_LOG_ANALYZER_PROMPT
-
+from schemas import LogAnalysis
 
 load_dotenv()
 
@@ -29,6 +29,13 @@ def main():
 
     print(interaction.output_text)
     
+    response_text = interaction.output_text
+    
+    response_data = json.loads(response_text)
+    llm_response = LogAnalysis(**response_data)
+    
+    print ("Validated LLM Response:")
+    print(llm_response)
 
 
 if __name__ == "__main__":
