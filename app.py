@@ -88,6 +88,51 @@ def analyze_log(log_content):
     except ValidationError as error:
         print(f"Response validation failed: {error}")
         return None
+    
+def filter_with_context(log_content, context_lines=2):
+    lines = log_content.splitlines()
+
+    relevant_keywords = [
+        "ERROR",
+        "WARN",
+        "WARNING",
+        "EXCEPTION",
+        "FAILED"
+    ]
+
+    selected_indexes = set()
+
+    for index, line in enumerate(lines):
+        if any(
+            keyword in line.upper()
+            for keyword in relevant_keywords
+        ):
+            start = max(0, index - context_lines)
+            end = min(len(lines), index + context_lines + 1)
+
+            selected_indexes.update(range(start, end))
+
+    return "\n".join(
+        lines[index]
+        for index in sorted(selected_indexes)
+    )
+    
+def split_into_chunks(log_content, chunk_size=100):
+    lines = log_content.splitlines()
+
+    if chunk_size <= 0:
+        raise ValueError("chunk_size must be greater than zero.")
+
+    chunks = []
+
+    for start in range(0, len(lines), chunk_size):
+        chunk_lines = lines[start:start + chunk_size]
+
+        chunk_text = "\n".join(chunk_lines)
+
+        chunks.append(chunk_text)
+
+    return chunks
 
 def main():
     file_path = input("Enter the path to the log file: ").strip()
@@ -100,6 +145,29 @@ def main():
     if log_content is None:
         print("Log analysis cancelled..")
         return
+    
+    # Step 2: Filter logs and preserve context
+    filtered_logs = filter_with_context(
+        log_content,
+        context_lines=2
+        )
+    
+    if not filtered_logs.strip():
+        print("No relevant log entries found.")
+        return
+
+    # Step 3: Split filtered logs into chunks
+    chunks = split_into_chunks(
+        filtered_logs,
+        chunk_size=100
+        )
+
+    print(f"Relevant chunks created: {len(chunks)}")
+
+    # Step 4: Display chunk information
+    for index, chunk in enumerate(chunks, start=1):
+        print(f"Chunk {index}: "f"{len(chunk.splitlines())} lines")
+        
     print("\nLog file loaded successfully.")
     print("Sending logs to Gemini for analysis...\n")
     
