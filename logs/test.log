@@ -1,0 +1,8 @@
+INFO Starting Artifactory
+INFO Loading configuration
+ERROR Permission denied: /etc/artifactory/master.key
+INFO Retrying startup
+WARN Retry attempt 2
+ERROR Failed to load master key
+INFO Initializing services
+ERROR Application startup failed

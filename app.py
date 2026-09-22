@@ -1,5 +1,6 @@
 import os
 import json
+from unittest import result
 from dotenv import load_dotenv
 from google import genai
 from prompt import LINUX_LOG_ANALYZER_PROMPT
@@ -52,12 +53,7 @@ def read_last_n_lines(file_path, max_lines=500):
         print(f"Error reading log file: {e}")
         return None
     
-def analyze_log(log_content):
-
-    prompt = LINUX_LOG_ANALYZER_PROMPT.format(
-        log=log_content
-    )
-
+def analyze_prompt(prompt):
     try:
         interaction = client.interactions.create(
             model="gemini-3.7-flash",
@@ -69,14 +65,12 @@ def analyze_log(log_content):
             }
         )
 
-        # Extract Gemini's JSON response
         output_text = interaction.output_text
 
         if not output_text:
             print("Error: Gemini returned an empty response.")
             return None
 
-        # Validate JSON against our Pydantic model
         result = LogAnalysis.model_validate_json(output_text)
 
         return result
@@ -88,6 +82,68 @@ def analyze_log(log_content):
     except ValidationError as error:
         print(f"Response validation failed: {error}")
         return None
+
+
+def analyze_log(log_content):
+    prompt = LINUX_LOG_ANALYZER_PROMPT.format(
+        log=log_content
+    )
+
+    return analyze_prompt(prompt)
+
+def analyze_chunks(chunks):
+
+    chunk_results = []
+
+    for index, chunk in enumerate(chunks, start=1):
+
+        print(f"Analyzing chunk {index}/{len(chunks)}...")
+
+        result = analyze_log(chunk)
+
+        if result is None:
+            print(f"Chunk {index} analysis failed. Skipping.")
+            continue
+
+        chunk_results.append({
+            "chunk_number": index,
+            "analysis": result.model_dump()
+        })
+
+    return chunk_results
+
+def synthesize_findings(chunk_results):
+
+    if not chunk_results:
+        print("No successful chunk analyses to combine.")
+        return None
+
+    findings_text = "\n".join(
+        f"Chunk {item['chunk_number']}: "
+        f"{item['analysis']}"
+        for item in chunk_results
+    )
+
+    synthesis_prompt = f"""
+    You are a Linux log investigation assistant.
+
+    Below are findings from separate log chunks.
+
+    {findings_text}
+
+    Combine the findings into one overall analysis.
+
+    Rules:
+    - Use only the findings provided.
+    - Do not invent missing evidence.
+    - Do not assume different errors share the same cause.
+    - If the overall root cause cannot be established,
+    use "Insufficient information".
+    - Include supporting evidence.
+    - Return the required structured output.
+    """
+
+    return analyze_prompt(synthesis_prompt)
     
 def filter_with_context(log_content, context_lines=2):
     lines = log_content.splitlines()
@@ -117,7 +173,7 @@ def filter_with_context(log_content, context_lines=2):
         for index in sorted(selected_indexes)
     )
     
-def split_into_chunks(log_content, chunk_size=100):
+def split_into_chunks(log_content, chunk_size=3):
     lines = log_content.splitlines()
 
     if chunk_size <= 0:
@@ -159,7 +215,7 @@ def main():
     # Step 3: Split filtered logs into chunks
     chunks = split_into_chunks(
         filtered_logs,
-        chunk_size=100
+        chunk_size=3
         )
 
     print(f"Relevant chunks created: {len(chunks)}")
@@ -168,10 +224,23 @@ def main():
     for index, chunk in enumerate(chunks, start=1):
         print(f"Chunk {index}: "f"{len(chunk.splitlines())} lines")
         
+    # Step 4: Analyze each chunk
+    chunk_results = analyze_chunks(chunks)
+    if not chunk_results:
+        print("All chunk analyses failed.")
+        return
+    
+    # Step 5: Combine chunk findings
+    llm_response = synthesize_findings(chunk_results)
+
+    if llm_response is None:
+        print("Final synthesis failed.")
+        return
+        
     print("\nLog file loaded successfully.")
     print("Sending logs to Gemini for analysis...\n")
     
-    llm_response = analyze_log(log_content)
+    
     
         
     print("\nValidated Log Analysis:")
