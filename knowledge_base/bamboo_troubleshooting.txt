@@ -1,0 +1,31 @@
+Bamboo Troubleshooting Guide
+
+Section 1: Permission Denied
+
+If Bamboo reports Permission denied while executing a
+deployment script, verify whether the script has
+executable permissions.
+
+Check whether the Bamboo service account has permission
+to access and execute the deployment script.
+
+Review the file and directory permissions before
+changing any permissions.
+
+Section 2: Network Connection Failure
+
+If Bamboo cannot connect to a deployment server,
+verify network connectivity between the Bamboo server
+and the target server.
+
+Check whether the required port is reachable.
+Review firewall rules and network configuration.
+
+Section 3: Missing Deployment Script
+
+If Bamboo reports that a deployment script cannot
+be found, verify that the script exists at the
+configured path.
+
+Check whether the deployment job is using the
+correct working directory and script location.
