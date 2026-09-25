@@ -1,0 +1,58 @@
+===============================
+Artifactory Troubleshooting Guide
+===============================
+
+1. Repository Access Issues
+---------------------------
+Problem:
+- Users unable to access repositories or receive 403/404 errors.
+
+Troubleshooting Steps:
+- Verify user permissions in Artifactory (check roles/groups).
+- Confirm repository URL is correct and accessible.
+- Check reverse proxy or firewall rules blocking access.
+- Review Artifactory logs for authentication/authorization errors.
+
+Resolution:
+- Update user/group permissions.
+- Correct repository path in client configuration.
+- Adjust proxy/firewall settings as needed.
+
+------------------------------------------------------------
+
+2. Storage and Disk Space Problems
+----------------------------------
+Problem:
+- Artifactory reports "low disk space" or fails to store artifacts.
+
+Troubleshooting Steps:
+- Check available disk space on the server hosting Artifactory.
+- Review storage quota configuration in Artifactory.
+- Inspect logs for "storage quota exceeded" warnings.
+- Identify large or unused artifacts consuming space.
+
+Resolution:
+- Increase disk space or move storage to a larger volume.
+- Configure cleanup policies for old snapshots/releases.
+- Enable artifact retention policies to auto-delete unused files.
+
+------------------------------------------------------------
+
+3. Performance and Slow Response
+--------------------------------
+Problem:
+- Artifactory UI or API responds slowly, builds timeout.
+
+Troubleshooting Steps:
+- Check server CPU and memory utilization.
+- Review database performance (connection pool, queries).
+- Inspect reverse proxy configuration for bottlenecks.
+- Look for excessive concurrent requests in logs.
+
+Resolution:
+- Allocate more memory/CPU to Artifactory service.
+- Optimize database configuration and connection pool.
+- Enable caching for frequently accessed artifacts.
+- Scale horizontally with additional Artifactory nodes.
+
+------------------------------------------------------------
