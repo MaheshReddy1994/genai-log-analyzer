@@ -23,7 +23,7 @@ class SimpleVectorStore:
         self.documents.append(document)
         
         
-    def search(self, query_embedding, top_k=2):
+    def search(self, query_embedding, top_k=3):
         """
         Search for the most similar documents to the given query embedding.
 
@@ -42,6 +42,6 @@ class SimpleVectorStore:
                 "metadata": document["metadata"]
             })
             
-            results.sort(key = lambda item: item["score"], reverse=True)
+        results.sort(key = lambda item: item["score"], reverse=True)
             
-            return results[:top_k]
+        return results[:top_k]

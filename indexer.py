@@ -14,6 +14,9 @@ def build_indexer():
     
     document_content = load_document(file_path)
     chunks = chunk_text(document_content, chunk_size=300, overlap=50)
+    for index, chunk in enumerate(chunks):
+        print(f"\n--- Chunk {index} ---")
+        print(chunk)
     store = SimpleVectorStore()
     
     for index, chunk in enumerate(chunks):
