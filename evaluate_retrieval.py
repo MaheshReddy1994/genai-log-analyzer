@@ -53,9 +53,17 @@ def evaluate_retrieval():
             query_embedding,
             top_k=TOP_K
         )
+        MIN_SIMILARITY_SCORE = 0.75
 
+        filtered_results = [
+            result
+            for result in results
+            if result["score"] >= MIN_SIMILARITY_SCORE
+        ]
+
+        retrieved_ids = [result["id"] for result in filtered_results]
         # Extract the IDs returned by the vector store.
-        retrieved_ids = [result["id"] for result in results]
+        #retrieved_ids = [result["id"] for result in results]
 
         # Check whether the expected chunk was retrieved.
         hit = expected_id in retrieved_ids
@@ -67,7 +75,8 @@ def evaluate_retrieval():
         print(f"Question: {question}")
         print(f"Expected chunk: {expected_id}")
         print(f"Retrieved chunks: {retrieved_ids}")
-        print(f"Hit@{TOP_K}: {hit}")
+        #print(f"Hit@{TOP_K}: {hit}")
+        print(f"Hit after threshold filtering: {hit}")
 
     # Calculate the overall retrieval hit rate.
     hit_rate = hits / total_tests if total_tests else 0
@@ -78,7 +87,8 @@ def evaluate_retrieval():
     print(f"Total tests: {total_tests}")
     print(f"Successful retrievals: {hits}")
     print(f"Failed retrievals: {total_tests - hits}")
-    print(f"Hit Rate@{TOP_K}: {hit_rate:.2%}")
+    #print(f"Hit Rate@{TOP_K}: {hit_rate:.2%}")
+    print(f"Filtered Retrieval Hit Rate: {hit_rate:.2%}")
 
 
 if __name__ == "__main__":
