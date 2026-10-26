@@ -19,10 +19,15 @@ def load_document(file_path):
     return file_path.read_text(encoding="utf-8",errors="replace")
 
 
+
+
+
+
 def chunk_text(text, chunk_size=500, overlap=50):
     """
-    Keep each troubleshooting section together when possible.
-    Split oversized sections into paragraph-based chunks.
+    Keep sections together when possible.
+    Split oversized sections at paragraph boundaries.
+    Reuse complete paragraphs as overlap where possible.
     """
     if chunk_size <= 0:
         raise ValueError("chunk_size must be positive")
@@ -32,47 +37,66 @@ def chunk_text(text, chunk_size=500, overlap=50):
             "overlap must be >= 0 and smaller than chunk_size"
         )
 
-    # Split before headings such as "Section 1:"
     sections = re.split(r"(?=Section \d+:)", text.strip())
-
     chunks = []
 
     for section in sections:
         section = section.strip()
+        print(f"Section length: {len(section)}")
+        print(f"Section starts: {section[:50]!r}")
         if not section:
             continue
 
-        # Keep a complete section together if it fits.
         if len(section) <= chunk_size:
             chunks.append(section)
             continue
 
-        # If a section is too long, split it at paragraph boundaries.
         paragraphs = [
             p.strip()
             for p in re.split(r"\n\s*\n", section)
             if p.strip()
         ]
 
-        current = ""
+        current_paragraphs = []
 
         for paragraph in paragraphs:
-            candidate = (
-                f"{current}\n\n{paragraph}"
-                if current else paragraph
-            )
+            candidate_paragraphs = current_paragraphs + [paragraph]
+            candidate = "\n\n".join(candidate_paragraphs)
 
             if len(candidate) <= chunk_size:
-                current = candidate
-            else:
-                if current:
-                    chunks.append(current)
-                current = paragraph
+                current_paragraphs = candidate_paragraphs
+                continue
 
-        if current:
-            chunks.append(current)
+            if current_paragraphs:
+                chunks.append("\n\n".join(current_paragraphs))
+
+            # Reuse whole trailing paragraphs where possible.
+            overlap_paragraphs = []
+            overlap_length = 0
+
+            for previous in reversed(current_paragraphs):
+                extra_length = len(previous) + (
+                    2 if overlap_paragraphs else 0
+                )
+
+                if overlap_length + extra_length > overlap:
+                    break
+
+                overlap_paragraphs.insert(0, previous)
+                overlap_length += extra_length
+
+            current_paragraphs = overlap_paragraphs + [paragraph]
+
+            # If overlap plus the new paragraph is too large,
+            # keep the new paragraph alone.
+            if len("\n\n".join(current_paragraphs)) > chunk_size:
+                current_paragraphs = [paragraph]
+
+        if current_paragraphs:
+            chunks.append("\n\n".join(current_paragraphs))
 
     return chunks
+
 
 if __name__ == "__main__":
     file_path = KNOWLEDGE_BASE_DIR / "bamboo_troubleshooting.txt"

@@ -26,7 +26,7 @@ def generate_embedding(text):
         contents = text
     )
     
-    print (f"Embedding results: {result}")
+    #print (f"Embedding results: {result}")
     
     return result.embeddings[0].values
 

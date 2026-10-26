@@ -15,6 +15,7 @@ if not API_KEY:
     raise ValueError("GEMINI_API_KEY is not set in the environment variables.")
 
 client = genai.Client(api_key=API_KEY)
+MIN_SIMILARITY_SCORE = 0.75
 
 def generate_answer(question, context):
     """Generate an answer to the question based on the provided context using GenAI."""
@@ -36,7 +37,15 @@ def retrive_context(question, store, top_k=3):
         query_embedding,
         top_k=top_k
     )
+    # Keep only chunks that meet the similarity threshold.
+    results = [
+        result
+        for result in results
+        if result["score"] >= MIN_SIMILARITY_SCORE
+    ]
     
+    if not results:
+        return "", []
     context = build_context(results)
     for result in results:
         print(f"\nChunk ID: {result['id']}")
@@ -51,6 +60,11 @@ def answer_question(question, store):
     """Run retrieval-augmented generation (RAG) to answer a question based on the knowledge base."""
     
     context, results = retrive_context(question, store)
+    if not results or results[0]["score"] < MIN_SIMILARITY_SCORE:
+        return (
+            "The available documentation is insufficient "
+            "to answer this question."
+        ), results
     
     print("\n--- Retrieved chunks for debugging ---")
 

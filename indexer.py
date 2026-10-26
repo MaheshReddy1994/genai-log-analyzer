@@ -13,7 +13,7 @@ def build_indexer():
     file_path = KNOWLEDGE_BASE_DIR / "bamboo_troubleshooting.txt"
     
     document_content = load_document(file_path)
-    chunks = chunk_text(document_content, chunk_size=300, overlap=50)
+    chunks = chunk_text(document_content, chunk_size=500, overlap=50)
     for index, chunk in enumerate(chunks):
         print(f"\n--- Chunk {index} ---")
         print(chunk)
